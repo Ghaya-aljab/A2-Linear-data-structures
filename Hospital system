@@ -19,6 +19,10 @@ class CurrentCondition(Enum):
     UNKNOWN = "Unknown"
 
 
+class Gender(Enum):
+    MALE = "Male"
+    FEMALE = "Female"
+
 class Prescription:
     def __init__(self, medication_name, dosage, duration):
         self.medication_name = medication_name
@@ -49,9 +53,9 @@ class Patient:
         print(f"Updated medical record for {self.name}.")
 
     def __str__(self):
-        prescription_str = "\n".join(str(p) for p in self.prescriptions)
+        prescription_str = "\n".join(str(p) for p in self.prescriptions) if self.prescriptions else "None"
         return (f"Patient ID: {self.patient_id}, Name: {self.name}, Age: {self.age}, "
-                f"Gender: {self.gender}, Medical History: {self.medical_history.value}, "
+                f"Gender: {self.gender.value}, Medical History: {self.medical_history.value}, "
                 f"Current Condition: {self.current_condition.value}, Prescriptions: {prescription_str}")
 
 
@@ -222,8 +226,8 @@ def main_menu():
     print("Welcome to the Hospital Patient Record System")
     num_patients = int(input("\nEnter the number of patients coming to the hospital: "))
     for i in range(1, num_patients + 1):
-        patient = Patient(i, f"Patient{i}", random.randint(20, 80), random.choice(["Male", "Female"]),
-                          MedicalHistory.FLU, CurrentCondition.HEALTHY)
+        patient = Patient(i, f"Patient{i}", random.randint(20, 80), Gender(random.choice(["Male", "Female"])),
+                          MedicalHistory.FLU, CurrentCondition(random.choice(["Healthy", "Sick", "Recovering", "Critical", "Unknown"])))
         system.add_patient(patient)
     for j in range(1, 6):  # Assuming 5 doctors for simplicity
         doctor = Doctor(f"D{j}", f"Doctor{j}", random.choice(["General", "Pediatrics", "Orthopedics"]))
