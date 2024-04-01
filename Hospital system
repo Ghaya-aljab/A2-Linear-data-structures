@@ -53,10 +53,14 @@ class Patient:
         print(f"Updated medical record for {self.name}.")
 
     def __str__(self):
+        medical_history = self.medical_history.value if isinstance(self.medical_history, Enum) else self.medical_history
+        current_condition = self.current_condition.value if isinstance(self.current_condition,
+                                                                       Enum) else self.current_condition
+        gender = self.gender.value if isinstance(self.gender, Enum) else self.gender
         prescription_str = "\n".join(str(p) for p in self.prescriptions) if self.prescriptions else "None"
         return (f"Patient ID: {self.patient_id}, Name: {self.name}, Age: {self.age}, "
-                f"Gender: {self.gender.value}, Medical History: {self.medical_history.value}, "
-                f"Current Condition: {self.current_condition.value}, Prescriptions: {prescription_str}")
+                f"Gender: {gender}, Medical History: {medical_history}, "
+                f"Current Condition: {current_condition}, Prescriptions: {prescription_str}")
 
 
 class Doctor:
@@ -225,20 +229,26 @@ def main_menu():
     system = HospitalSystem()
     print("Welcome to the Hospital Patient Record System")
     num_patients = int(input("\nEnter the number of patients coming to the hospital: "))
+
     for i in range(1, num_patients + 1):
-        patient = Patient(i, f"Patient{i}", random.randint(20, 80), Gender(random.choice(["Male", "Female"])),
-                          MedicalHistory.FLU, CurrentCondition(random.choice(["Healthy", "Sick", "Recovering", "Critical", "Unknown"])))
+        # Randomly select medical history and current condition from their Enum classes
+        medical_history = random.choice(list(MedicalHistory))
+        current_condition = random.choice(list(CurrentCondition))
+        gender = random.choice(list(Gender))
+
+        patient = Patient(i, f"Patient{i}", random.randint(20, 80), gender, medical_history, current_condition)
         system.add_patient(patient)
+
     for j in range(1, 6):  # Assuming 5 doctors for simplicity
         doctor = Doctor(f"D{j}", f"Doctor{j}", random.choice(["General", "Pediatrics", "Orthopedics"]))
         system.add_doctor(doctor)
 
     while True:
         print("\n--- Hospital Patient Record System Menu ---")
-        print("1. List Patients")
+        print("1. View Patients Records")
         print("2. Schedule an Appointment")
         print("3. Search for a Patient")
-        print("4. Consult Patients")
+        print("4. Consultation")
         print("5. Remove a Patient")
         print("6. Exit")
         choice = input("Enter choice: ")
@@ -250,7 +260,8 @@ def main_menu():
             system.schedule_appointment(int(patient_id))
         elif choice == "3":
             patient_id = input("Enter patient ID to search: ")
-            if system.binary_search_patient(int(patient_id)):
+            found = system.binary_search_patient(int(patient_id))
+            if found:
                 # Additional actions for found patient could be added here
                 pass
         elif choice == "4":
@@ -267,3 +278,4 @@ def main_menu():
 
 if __name__ == "__main__":
     main_menu()
+
