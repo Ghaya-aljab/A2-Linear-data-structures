@@ -1,90 +1,213 @@
 import random
+from datetime import datetime, timedelta
+from enum import Enum
+
+
+class MedicalHistory(Enum):
+    FLU = "Flu"
+    COLD = "Cold"
+    ALLERGY = "Allergy"
+    COVID19 = "COVID-19"
+    UNKNOWN = "Unknown"
+
+
+class CurrentCondition(Enum):
+    HEALTHY = "Healthy"
+    SICK = "Sick"
+    RECOVERING = "Recovering"
+    CRITICAL = "Critical"
+    UNKNOWN = "Unknown"
+
+
+class Prescription:
+    def __init__(self, medication_name, dosage, duration):
+        self.medication_name = medication_name
+        self.dosage = dosage
+        self.duration = duration
+
+    def __str__(self):
+        return f"Medication: {self.medication_name}, Dosage: {self.dosage}, Duration: {self.duration}"
+
 
 class Patient:
-    def __init__(self, patient_id, name, age, gender, medical_history=None, current_condition=None, appointment=None):
+    def __init__(self, patient_id, name, age, gender, medical_history, current_condition):
         self.patient_id = patient_id
         self.name = name
-        self._age = age
-        self._gender = gender
-        self.medical_history = medical_history if medical_history else []
-        self.current_condition = current_condition if current_condition else ""
-        self.appointment = appointment
-        self.prescriptions = Stack()
+        self.age = age
+        self.gender = gender
+        self.medical_history = medical_history
+        self.current_condition = current_condition
+        self.appointments = []
+        self.prescriptions = []
 
-    def get_age(self):
-        return self._age
+    def add_prescription(self, prescription):
+        self.prescriptions.append(prescription)
 
-    def set_age(self, value):
-        if value < 0:
-            raise ValueError("Age cannot be negative.")
-        self._age = value
+    def update_medical_record(self, new_medical_history, new_current_condition):
+        self.medical_history = new_medical_history
+        self.current_condition = new_current_condition
+        print(f"Updated medical record for {self.name}.")
 
-    def get_gender(self):
-        return self._gender
+    def __str__(self):
+        prescription_str = "\n".join(str(p) for p in self.prescriptions)
+        return (f"Patient ID: {self.patient_id}, Name: {self.name}, Age: {self.age}, "
+                f"Gender: {self.gender}, Medical History: {self.medical_history.value}, "
+                f"Current Condition: {self.current_condition.value}, Prescriptions: {prescription_str}")
 
-    def set_gender(self, value):
-        if value not in ["Male", "Female", "Other"]:
-            raise ValueError("Gender must be 'Male', 'Female', or 'Other'.")
-        self._gender = value
 
 class Doctor:
-    def __init__(self, doctor_id, name, specialty, availability=None):
+    def __init__(self, doctor_id, name, specialty):
         self.doctor_id = doctor_id
         self.name = name
         self.specialty = specialty
-        self.availability = availability if availability else []
-        self.patients = Queue()
 
-class Prescription:
-    def __init__(self, prescription_id, medication, dosage, issue_date, doctor_id):
-        self.prescription_id = prescription_id
-        self.medication = medication
-        self._dosage = dosage
-        self.issue_date = issue_date
-        self.doctor_id = doctor_id
+    def __str__(self):
+        return f"Doctor ID: {self.doctor_id}, Name: {self.name}, Specialty: {self.specialty}"
 
-    def get_dosage(self):
-        return self._dosage
 
-    def set_dosage(self, value):
-        if not value:
-            raise ValueError("Dosage cannot be empty.")
-        self._dosage = value
+class Appointment:
+    def __init__(self, doctor, date_time):
+        self.doctor = doctor
+        self.date_time = date_time
 
-class Queue:
+    def __str__(self):
+        return f"Appointment with Doctor {self.doctor.name} on {self.date_time.strftime('%Y-%m-%d %H:%M')}"
+
+
+class HospitalSystem:
     def __init__(self):
-        self.items = []
+        self.patients = {}
+        self.doctors = {}
+        self.general_queue = []  # General queue for incoming patients
+        self.doctor_queues = {}  # Individual queues for each doctor
 
-    def enqueue(self, item):
-        self.items.append(item)
+    def add_patient(self, patient):
+        self.patients[patient.patient_id] = patient
+        self.general_queue.append(patient.patient_id)
 
-    def dequeue(self):
-        if not self.is_empty():
-            return self.items.pop(0)
+    def add_doctor(self, doctor):
+        self.doctors[doctor.doctor_id] = doctor
+        self.doctor_queues[doctor.doctor_id] = []
+
+    def schedule_appointment(self, patient_id):
+        patient_id = int(patient_id)
+        patient = self.patients.get(patient_id)
+        if not patient:
+            print(f"Patient ID: {patient_id} not found.")
+            return
+
+        print("Available Doctors:")
+        for doctor_id, doctor in self.doctors.items():
+            print(f"{doctor_id}: {doctor.name} - Specialty: {doctor.specialty}")
+
+        doctor_id = input("Choose a doctor ID for the appointment: ")
+        doctor = self.doctors.get(doctor_id)
+
+        if not doctor:
+            print("Invalid doctor ID.")
+            return
+
+        date_time = datetime.now() + timedelta(days=random.randint(1, 30))
+        appointment = Appointment(doctor, date_time)
+        patient.appointments.append(appointment)
+
+        self.general_queue.remove(patient_id)  # Remove patient from the general queue after scheduling an appointment
+
+        print(
+            f"Appointment scheduled for {patient.name} with Dr. {doctor.name} ({doctor.specialty}) on {date_time.strftime('%Y-%m-%d %H:%M')}.")
+
+    def consult_patients(self):
+        if not self.general_queue:
+            print("No patients in the general queue.")
+            return
+
+        num_patients_to_consult = int(input("Enter the number of patients to consult from the general queue: "))
+        num_consulted = 0
+
+        while self.general_queue and num_consulted < num_patients_to_consult:
+            patient_id = self.general_queue.pop(0)
+            patient = self.patients.get(patient_id)
+            if patient:
+                print(f"Consulted patient: {patient.name}.")
+                num_consulted += 1
+            else:
+                print(f"Patient ID {patient_id} not found.")
+        print(f"Total patients consulted from the general queue: {num_consulted}")
+
+    def remove_patient(self, patient_id):
+        patient_id = int(patient_id)
+        if patient_id in self.general_queue:
+            self.general_queue.remove(patient_id)
+            print(f"Patient ID: {patient_id} removed from the general queue.")
+        if patient_id in self.patients:
+            del self.patients[patient_id]
+            print(f"Patient ID: {patient_id}'s record has been removed from the hospital system.")
+
+    def list_patients(self):
+        for patient in self.patients.values():
+            print(patient)
+
+    def list_doctors(self):
+        for doctor in self.doctors.values():
+            print(doctor)
+
+    def binary_search_patient(self, patient_id):
+        patient_id = int(patient_id)
+        patients_list = sorted(list(self.patients.keys()))
+        low, high = 0, len(patients_list) - 1
+        while low <= high:
+            mid = (low + high) // 2
+            if patients_list[mid] == patient_id:
+                print(self.patients[patient_id])
+                return
+            elif patients_list[mid] < patient_id:
+                low = mid + 1
+            else:
+                high = mid - 1
+        print("Patient ID not found.")
+
+
+def main_menu():
+    system = HospitalSystem()
+    print("Welcome to the Hospital Patient Record System")
+    num_patients = int(input("\nEnter the number of patients coming to the hospital: "))
+    for i in range(1, num_patients + 1):
+        patient = Patient(i, f"Patient{i}", random.randint(20, 80), "Male", MedicalHistory.FLU,
+                          CurrentCondition.HEALTHY)
+        system.add_patient(patient)
+    for j in range(1, 11):
+        doctor = Doctor(f"D{j}", f"Doctor{j}", "General")
+        system.add_doctor(doctor)
+
+    while True:
+        print("\n--- Hospital Patient Record System Menu ---")
+        print("1. List Patients")
+        print("2. Schedule an Appointment")
+        print("3. Search for a Patient")
+        print("4. Consult Patients")
+        print("5. Remove a Patient")
+        print("6. Exit")
+        choice = input("Enter choice: ")
+
+        if choice == "1":
+            system.list_patients()
+        elif choice == "2":
+            patient_id = input("Enter patient ID to schedule an appointment: ")
+            system.schedule_appointment(int(patient_id))
+        elif choice == "3":
+            patient_id = input("Enter patient ID to search: ")
+            system.binary_search_patient(int(patient_id))
+        elif choice == "4":
+            system.consult_patients()
+        elif choice == "5":
+            patient_id = input("Enter patient ID to remove: ")
+            system.remove_patient(int(patient_id))
+        elif choice == "6":
+            print("Exiting system.")
+            break
         else:
-            return None
+            print("Invalid choice. Please enter a number between 1 and 6.")
 
-    def is_empty(self):
-        return len(self.items) == 0
 
-    def size(self):
-        return len(self.items)
-
-class Stack:
-    def __init__(self):
-        self.items = []
-
-    def push(self, item):
-        self.items.append(item)
-
-    def pop(self):
-        if not self.is_empty():
-            return self.items.pop()
-        else:
-            return None
-
-    def is_empty(self):
-        return len(self.items) == 0
-
-    def size(self):
-        return len(self.items)
+if __name__ == "__main__":
+    main_menu()
