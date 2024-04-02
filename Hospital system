@@ -2,7 +2,7 @@ import random #importing random module
 from datetime import datetime, timedelta #importing date and time
 from enum import Enum #importing enumerations
 
-class MedicalHistory(Enum):
+class MedicalHistory(Enum): #Enum class
     """Represents possible medical histories a patient may have."""
     FLU = "Flu"
     COLD = "Cold"
@@ -10,7 +10,7 @@ class MedicalHistory(Enum):
     COVID19 = "COVID-19"
     UNKNOWN = "Unknown"
 
-class CurrentCondition(Enum):
+class CurrentCondition(Enum):#Enum class
     """Defines the current health condition of a patient."""
     HEALTHY = "Healthy"
     SICK = "Sick"
