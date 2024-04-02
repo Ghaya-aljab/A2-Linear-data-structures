@@ -18,12 +18,12 @@ class CurrentCondition(Enum):#Enum class
     CRITICAL = "Critical"
     UNKNOWN = "Unknown"
 
-class Gender(Enum):
+class Gender(Enum): #Enum class
     """Gender of the patient, used for patient information."""
     MALE = "Male"
     FEMALE = "Female"
 
-class Prescription:
+class Prescription: #prescription class
     """Details a prescription given to a patient, including medication name, dosage, and duration."""
     def __init__(self, medication_name, dosage, duration):
         self.medication_name = medication_name
