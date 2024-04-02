@@ -33,34 +33,42 @@ class Prescription: #prescription class
     def __str__(self):
         return f"Medication: {self.medication_name}, Dosage: {self.dosage}, Duration: {self.duration}"
 
-class Patient: #patient class
-    """Stores patient information including ID, name, age, gender, medical history, current condition, appointments, and prescriptions."""
+class Patient:
+    """ A class that represents patients, including its attributes   """
     def __init__(self, patient_id, name, age, gender, medical_history, current_condition):
+        # Initialize patient with basic information and empty lists for appointments and prescriptions.
         self.patient_id = int(patient_id)
         self.name = name
         self.age = age
-        self.gender = gender
-        self.medical_history = medical_history
-        self.current_condition = current_condition
-        self.appointments = []
-        self.prescriptions = []
+        self.gender = gender  # Gender is stored as an enum for standardized representation.
+        self.medical_history = medical_history  # Stores an enum representing the patient's medical history.
+        self.current_condition = current_condition  # Enum for current health condition.
+        self.appointments = []  # List to store scheduled appointments.
+        self.prescriptions = []  # List to store prescriptions.
 
     def add_prescription(self, prescription):
+        # Adds a new prescription to the patient's record.
         self.prescriptions.append(prescription)
 
     def update_medical_record(self, new_medical_history, new_current_condition):
+        # Updates the patient's medical record with a new medical history and current condition.
         self.medical_history = new_medical_history
         self.current_condition = new_current_condition
         print(f"Updated medical record for {self.name}.")
 
     def __str__(self):
+        # Generates a string representation of the patient's record, including appointments.
         medical_history = self.medical_history.value if isinstance(self.medical_history, Enum) else self.medical_history
         current_condition = self.current_condition.value if isinstance(self.current_condition, Enum) else self.current_condition
         gender = self.gender.value if isinstance(self.gender, Enum) else self.gender
         prescription_str = "\n".join(str(p) for p in self.prescriptions) if self.prescriptions else "None"
+        # Generate a string representation of all appointments.
+        appointment_str = "\n".join(str(a) for a in self.appointments) if self.appointments else "No appointments"
         return (f"Patient ID: {self.patient_id}, Name: {self.name}, Age: {self.age}, "
                 f"Gender: {gender}, Medical History: {medical_history}, "
-                f"Current Condition: {current_condition}, Prescriptions: {prescription_str}")
+                f"Current Condition: {current_condition}, Prescriptions: {prescription_str}, "
+                f"Appointments: {appointment_str}")
+
 
 class Doctor: #Doctor class
     """Represents a doctor in the hospital system, including their ID, name, and specialty."""
@@ -311,7 +319,7 @@ def main_menu():
                 patient_id = input("Enter patient ID to search: ")
                 found = system.binary_search_patient(int(patient_id))
                 if found:
-                    # Additional actions for found patient could be added here
+                    # Additional actions for found patients could be added here
                     pass
             except ValueError:
                 print("Invalid input. Please enter a numeric patient ID.")
