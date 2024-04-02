@@ -81,7 +81,7 @@ class Appointment: #Appointment class
     def __str__(self):
         return f"Appointment with Doctor {self.doctor.name} on {self.date_time.strftime('%Y-%m-%d %H:%M')}"
 
-class HospitalSystem:
+class HospitalSystem: #hospital system class
     """Manages the hospital system, including storage and management of patient and doctor records, appointments, and general queue for consultations."""
     def __init__(self):
         self.patients = {}  # Stores patient objects
